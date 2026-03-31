@@ -14,12 +14,11 @@ public class CircuitParallele extends Circuit{
         double resistance = 0;
         for (Composant composant : this.composants) {
             if (composant.getClass() == CircuitSerie.class) {
-
-                CircuitSerie n = new CircuitSerie(Collections.singletonList(composant));
+                CircuitSerie n = new CircuitSerie(((CircuitSerie) composant).composants);
                 resistance += 1 / n.calculerResistance();
             }
             if (composant.getClass() == CircuitParallele.class) {
-                CircuitParallele n = new CircuitParallele(Collections.singletonList(composant));
+                CircuitParallele n = new CircuitParallele(((CircuitParallele) composant).composants);
                 resistance += 1 / n.calculerResistance();
             }
             if (composant.getClass() == Resistance.class) {
