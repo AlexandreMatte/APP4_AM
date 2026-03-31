@@ -7,9 +7,10 @@ public class CircuitBuilder {
     public CircuitBuilder() {
     }
 
-    public Composant construireCircuit(String) {
-    }
+    //public Composant construireCircuit(String a){
+    //}
 
-    private <JsonNode> Composant lireComposant(JsonNode) {
-    }
+
+    //private <JsonNode> Composant lireComposant(JsonNode a) {
+    //}
 }
