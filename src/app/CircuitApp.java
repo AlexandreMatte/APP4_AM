@@ -2,6 +2,13 @@ package app;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class CircuitApp {
@@ -10,22 +17,46 @@ public class CircuitApp {
     }
 
     static void main(String[] args) {
-        System.out.println("---Lancement Du Programme---");
+        System.out.println("---Lancement Du Programme---\n");
         final char fSep = File.separatorChar;
-        int i = 1;
 
-        String cheminFichier = System.getProperty("user.dir") + fSep + "src" + fSep + "donnees" + fSep +"complexe_industriel_zone_nord.json";
-        try (Scanner scanner = new Scanner(new File(cheminFichier), "UTF-8")) {
+        String cheminFichier = System.getProperty("user.dir") + fSep + "src" + fSep + "donnees";
+        try {
+            List<Path> fichiersJson = getFichiersJson(cheminFichier);
 
-            while (scanner.hasNextLine()) {
-
-                String ligne = scanner.nextLine();
-                System.out.println(ligne);
+            if (fichiersJson.isEmpty()) {
+                System.err.println("Erreur : aucun fichier Json trouvé dans -> " + cheminFichier);
+            } else {
+                for (int i = 0; i < fichiersJson.size(); i++) {
+                    System.out.println(fichiersJson.get(i) + " [" + i + "]");
+                }
             }
-        } catch (FileNotFoundException e) {
-            System.err.println("Erreur : fichier introuvable -> " + cheminFichier);
-        } catch (Exception e) {
-            System.err.println("Erreur lors de la lecture du fichier : " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Error: " + e.getMessage());
         }
+    }
+
+    public static List<Path> getFichiersJson(String folderPath) throws IOException {
+        List<Path> jsonFiles = new ArrayList<>();
+
+        Path dir = Paths.get(folderPath);
+
+        if (!Files.exists(dir)) {
+            throw new IOException("Directory does not exist: " + folderPath);
+        }
+        if (!Files.isDirectory(dir)) {
+            throw new IOException("Path is not a directory: " + folderPath);
+        }
+
+        // Use try-with-resources to ensure the stream is closed
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.json")) {
+            for (Path entry : stream) {
+                if (Files.isRegularFile(entry)) {
+                    jsonFiles.add(entry.toAbsolutePath());
+                }
+            }
+        }
+
+        return jsonFiles;
     }
 }
