@@ -18,7 +18,7 @@ public class CircuitBuilder {
     //}
 
 
-    private Composant lireComposant(JsonNode node) {
+    public static Composant lireComposant(JsonNode node) {
         String type = node.get("type").asText();
 
         if ("resistance".equals(type)) {
