@@ -19,26 +19,42 @@ public class CircuitBuilder {
 
 
     public static Composant lireComposant(JsonNode node) {
-        String type = node.get("type").asText();
-
-        if ("resistance".equals(type)) {
-            return new Resistance(node.get("valeur").asDouble());
-
-        } else if ("serie".equals(type)) {
-            List<Composant> composants = new ArrayList<>();
-            for (JsonNode composantNode : node.get("composants")) {
-                composants.add(lireComposant(composantNode));
-            }
-            return new CircuitSerie(composants);
-
-        } else if ("parallele".equals(type)) {
-            List<Composant> composants = new ArrayList<>();
-            for (JsonNode composantNode : node.get("composants")) {
-                composants.add(lireComposant(composantNode));
-            }
-            return new CircuitParallele(composants);
+        if (node == null || !node.has("type")) {
+            throw new IllegalArgumentException("Le nœud JSON est nul ou ne contient pas de champ 'type'.");
         }
-        throw new IllegalArgumentException("Type de composant inconnu : " + type);
+
+        String type = node.get("type").asText(null);
+        if (type == null) {
+            throw new IllegalArgumentException("Le champ 'type' est vide ou invalide.");
+        }
+
+        switch (type) {
+            case "resistance":
+                if (!node.has("valeur") || !node.get("valeur").isNumber()) {
+                    throw new IllegalArgumentException("Une résistance doit avoir un champ numérique 'valeur'.");
+                }
+                return new Resistance(node.get("valeur").asDouble());
+
+            case "serie":
+                return new CircuitSerie(lireListeComposants(node));
+
+            case "parallele":
+                return new CircuitParallele(lireListeComposants(node));
+
+            default:
+                throw new IllegalArgumentException("Type de composant inconnu : " + type);
+        }
     }
 
+    private static List<Composant> lireListeComposants(JsonNode node) {
+        if (!node.has("composants") || !node.get("composants").isArray()) {
+            throw new IllegalArgumentException("Le champ 'composants' doit être un tableau JSON.");
+        }
+
+        List<Composant> composants = new ArrayList<>();
+        for (JsonNode composantNode : node.get("composants")) {
+            composants.add(lireComposant(composantNode)); // récursif
+        }
+        return composants;
+    }
 }

@@ -57,8 +57,15 @@ public class CircuitApp {
         String path = String.valueOf(getFichiersJson(cheminFichier).get(reponse-1));
         File jsonFile = new File(path);
         JsonNode node = mapper.readTree(jsonFile);
-        Composant circuit = CircuitBuilder.lireComposant(node);
-        System.out.println(circuit.calculerResistance());
+
+        if (!node.has("circuit")) {
+            throw new IllegalArgumentException("Le fichier JSON doit contenir un objet 'circuit'.");
+        }
+
+        Composant circuit = CircuitBuilder.lireComposant(node.get("circuit"));
+
+
+        System.out.println(circuit.calculerResistance() );
     }
 
     public int entree(){
