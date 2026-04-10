@@ -12,6 +12,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -28,44 +29,49 @@ public class CircuitApp {
     }
 
     public CircuitApp() throws IOException {
-
+        boolean r = true;
 
         System.out.println("---Lancement Du Programme---\n");
-        System.out.println("-Liste de fichiers-");
+
+        while (r = true) {
+            System.out.println("-Liste de fichiers-");
 
 
-        try {
-            List<Path> fichiersJson = getFichiersJson(cheminFichier);
+            try {
+                List<Path> fichiersJson = getFichiersJson(cheminFichier);
 
-            if (fichiersJson.isEmpty()) {
-                System.err.println("Erreur : aucun fichier Json trouvé dans -> " + cheminFichier);
-            } else {
-                for (int i = 0; i < fichiersJson.size(); i++) {
-                    System.out.println(fichiersJson.get(i) + " [" + (i + 1) + "]");
+                if (fichiersJson.isEmpty()) {
+                    System.err.println("Erreur : aucun fichier Json trouvé dans -> " + cheminFichier);
+                } else {
+                    for (int i = 0; i < fichiersJson.size(); i++) {
+                        System.out.println(fichiersJson.get(i) + " [" + (i + 1) + "]");
+                    }
                 }
+            } catch (IOException e) {
+                System.err.println("Error: " + e.getMessage());
             }
-        } catch (IOException e) {
-            System.err.println("Error: " + e.getMessage());
+            System.out.println();
+
+            int reponse = entree();
+            System.out.println("Fichier numéro " + reponse + " sélectionné.\n");
+
+            System.out.println("Construction du fichier...");
+
+            String path = String.valueOf(getFichiersJson(cheminFichier).get(reponse - 1));
+            File jsonFile = new File(path);
+            JsonNode node = mapper.readTree(jsonFile);
+
+            if (!node.has("circuit")) {
+                throw new IllegalArgumentException("Le fichier JSON doit contenir un objet 'circuit'.");
+            }
+
+            Composant circuit = CircuitBuilder.lireComposant(node.get("circuit"));
+
+
+            System.out.println("La résistance est de " + circuit.calculerResistance() + " Ω.\n");
+
+            r = relancer();
         }
-        System.out.println();
-
-        int reponse = entree();
-        System.out.println("Fichier numéro " + reponse + " sélectionné.\n");
-
-        System.out.println("Construction du fichier...");
-
-        String path = String.valueOf(getFichiersJson(cheminFichier).get(reponse-1));
-        File jsonFile = new File(path);
-        JsonNode node = mapper.readTree(jsonFile);
-
-        if (!node.has("circuit")) {
-            throw new IllegalArgumentException("Le fichier JSON doit contenir un objet 'circuit'.");
-        }
-
-        Composant circuit = CircuitBuilder.lireComposant(node.get("circuit"));
-
-
-        System.out.println(circuit.calculerResistance() );
     }
 
     public int entree(){
@@ -82,6 +88,26 @@ public class CircuitApp {
                 }
             } catch (NumberFormatException | IOException e) {
                 System.out.println("Erreur: il faut entrez un numéro.\n");
+            }
+        }
+    }
+
+    public boolean relancer(){
+
+        while(true) {
+            System.out.print("Voulez vous relancer le programme? \n[R] Tester un autre fichier \n[Q] Quitter\n");
+            try {
+                String reponse = scanner.nextLine();
+                char i = reponse.charAt(0);
+                if (i == 'r' || i == 'R') {
+                    return true;
+                } else if (i == 'q' || i == 'Q') {
+                    return false;
+                } else {
+                    System.out.println("Erreur: Veuillez entrer la lettre r, la lettre q ou un mot qui commence par une de ces lettres.\n");
+                }
+            } catch (RuntimeException e) {
+                System.out.println("Erreur\n");
             }
         }
     }
