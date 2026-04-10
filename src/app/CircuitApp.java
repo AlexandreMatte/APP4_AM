@@ -33,7 +33,7 @@ public class CircuitApp {
 
         System.out.println("---Lancement Du Programme---\n");
 
-        while (r = true) {
+        while (r) {
             System.out.println("-Liste de fichiers-");
 
 
@@ -68,7 +68,7 @@ public class CircuitApp {
             Composant circuit = CircuitBuilder.lireComposant(node.get("circuit"));
 
 
-            System.out.println("La résistance est de " + circuit.calculerResistance() + " Ω.\n");
+            System.out.println("La résistance est de " + Math.round(circuit.calculerResistance() * 100.00) / 100.00 + " Ω.\n");
 
             r = relancer();
         }
